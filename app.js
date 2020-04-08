@@ -50,7 +50,6 @@ function decifrar(encryptedHex) {
 //'/usuarios/:id const id = req.params.id;  
 app.get('/login', function (req, res) {
   //console.log(cifrar('password'));
-  //$BTC$#1my00770p 
   console.log("Request Api rest: /login");
   if (req.query.user == undefined || req.query.pass == undefined || req.query.user == '' || req.query.pass == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
