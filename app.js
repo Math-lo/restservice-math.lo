@@ -3,8 +3,6 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const app = express();
 const util = require('util');
-//console.log(cifrar('IOHPHDSAIDH8098'));
-//console.log(cifrar('IOHPHDSAID31231'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -25,7 +23,7 @@ var con = mysql.createPool({
 const cifrado = {};
 const aesjs = require('aes-js');
 const key_128 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-//oye alan ahorita crees poder instalar node-rsa??
+
 function cifrar(texto) {
   let texto_bytes = aesjs.utils.utf8.toBytes(texto);
   //El contador es optional, si se omite, comienza desde el 1
@@ -47,8 +45,6 @@ function decifrar(encryptedHex) {
 
 //'/usuarios/:id const id = req.params.id;  
 app.get('/rest/login', function (req, res) {
-  //console.log(cifrar('ABCDEFGHIJ'));
-  //$BTC$#1my00770p 
   console.log("Request Api rest: /login");
   if (req.query.user == undefined || req.query.pass == undefined || req.query.user == '' || req.query.pass == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
@@ -560,20 +556,6 @@ function createDb(config) {
     query(sql, args) { return util.promisify(connection.query).call(connection, sql, args); },
     close() { return util.promisify(connection.end).call(connection); }
   };
-}
-
-var run = async (password) => {
-  sql = "select * from musuario;";
-  try {
-    const connection = createDb(configuration);
-    const data = await connection.query(sql);
-    connection.close();
-    return data;
-  } catch (eror) {
-    console.log(eror);
-    connection.close();
-    return 'error';
-  }
 }
 
 var saveRespuestasAlumno = async (idCue, idALu, resCor, resInc) => {
