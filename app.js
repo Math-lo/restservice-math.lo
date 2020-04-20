@@ -8,8 +8,6 @@ const util = require('util');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-//REVISAR, EL ID DEL PROFE POR SI CAMBIA DE ID
-
 const configuration = {
   host: "localhost",
   user: "root",
@@ -48,8 +46,8 @@ function decifrar(encryptedHex) {
 
 
 //'/usuarios/:id const id = req.params.id;  
-app.get('/login', function (req, res) {
-  //console.log(cifrar('password'));
+app.get('/rest/login', function (req, res) {
+  //console.log(cifrar('ABCDEFGHIJ'));
   //$BTC$#1my00770p 
   console.log("Request Api rest: /login");
   if (req.query.user == undefined || req.query.pass == undefined || req.query.user == '' || req.query.pass == '') {
@@ -65,8 +63,6 @@ app.get('/login', function (req, res) {
       } else {
         sql = "select * from musuario where cor_usu='" + String(req.query.user) + "' and pas_usu='" + cifrar(String(req.query.pass)) + "';";
         connection.query(sql, function (err, result) {
-          var datetime = new Date();
-          console.log(datetime);
           if (err) {
             respuesta = { error: true, codigo: 400, mensaje: 'Error while retrieving data. ' + err };
             res.send(respuesta);
@@ -83,7 +79,7 @@ app.get('/login', function (req, res) {
               };
               x = 1;
             } catch (error) {
-              console.log(error);
+              //console.log(error);
             }
             if (x == 0) {
               respuesta = {
@@ -99,9 +95,8 @@ app.get('/login', function (req, res) {
   }
 });
 
-app.get('/consultaAGProfesor', function (req, res) {
+app.get('/rest/consultaAGProfesor', function (req, res) {
   console.log("Request Api rest: /consultaAGProfesor");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -149,9 +144,8 @@ app.get('/consultaAGProfesor', function (req, res) {
   }
 });
 
-app.get('/consultaAlumnosGrupos', function (req, res) {
+app.get('/rest/consultaAlumnosGrupos', function (req, res) {
   console.log("Request Api rest: /consultaAlumnosGrupos");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -189,7 +183,7 @@ app.get('/consultaAlumnosGrupos', function (req, res) {
                     if (alumnos == 'err') {
                       alumnosGrupo.push([idgrupos[i], []]);
                     } else {
-                      alumnosGrupo.push([idgrupos[i], await getNomGrupoId(idgrupos[i]) ,alumnos]);
+                      alumnosGrupo.push([idgrupos[i], await getNomGrupoId(idgrupos[i]), alumnos]);
                     }
                   }
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', alumnosGrupo: alumnosGrupo };
@@ -209,9 +203,8 @@ app.get('/consultaAlumnosGrupos', function (req, res) {
   }
 });
 
-app.get('/consultaCuestionarioProfesor', function (req, res) {
+app.get('/rest/consultaCuestionarioProfesor', function (req, res) {
   console.log("Request Api rest: /consultaCuestionarioProfesor");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -265,9 +258,8 @@ app.get('/consultaCuestionarioProfesor', function (req, res) {
   }
 });
 
-app.get('/consultaCuestionarios', function (req, res) {
+app.get('/rest/consultaCuestionarios', function (req, res) {
   console.log("Request Api rest: /consultaCuestionarios");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -316,9 +308,8 @@ app.get('/consultaCuestionarios', function (req, res) {
   }
 });
 
-app.get('/consultaCuestPreguntas', function (req, res) {
+app.get('/rest/consultaCuestPreguntas', function (req, res) {
   console.log("Request Api rest: /consultaCuestPreguntas");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '' || req.query.cues == undefined || req.query.cues == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -350,7 +341,7 @@ app.get('/consultaCuestPreguntas', function (req, res) {
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
-                  respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionarios: cuestionarios };
+                  respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionario: cuestionarios };
                   res.send(respuesta);
                 }
               }
@@ -367,9 +358,8 @@ app.get('/consultaCuestPreguntas', function (req, res) {
   }
 });
 
-app.get('/consultaCuestAprRpr', function (req, res) {
+app.get('/rest/consultaCuestAprRpr', function (req, res) {
   console.log("Request Api rest: /consultaCuestAprRpr");
-  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '' || req.query.cues == undefined || req.query.cues == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -418,6 +408,152 @@ app.get('/consultaCuestAprRpr', function (req, res) {
   }
 });
 
+app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
+  console.log("Request Api rest: /consultaCuestionarioAlumno");
+  if (req.query.tok == undefined || req.query.tok == '') {
+    respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
+    res.send(respuesta);
+  } else {
+    con.getConnection(function (err, connection) {
+      if (err) {
+        connection.release();
+        console.log(err);
+        respuesta = { error: true, codigo: 400, mensaje: 'Error while connecting to the database. ' + err };
+        res.send(respuesta);
+      } else {
+        sql = "select * from musuario where tok_usu='" + cifrar(String(req.query.tok)) + "';";
+        connection.query(sql, async (err, result) => {
+          if (err) {
+            connection.release();
+            console.log(err)
+            respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the token.' };
+            res.send(respuesta);
+          } else {
+            try {
+              result[0].tok_usu;
+              if ((await getTipoUsuarioID(result[0].id_usu) == 1)) {
+                var idGrupos = await getGruposIdAlu(result[0].id_usu);
+                if (idGrupos == 'err') {
+                  respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
+                  res.send(respuesta);
+                } else {
+                  var cuestionarios = await getCuestionariosProfe(idGrupos);
+                  if (cuestionarios == 'err') {
+                    respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
+                    res.send(respuesta);
+                  } else {
+                    respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionarios: cuestionarios };
+                    res.send(respuesta);
+                  }
+                }
+              } else {
+                respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                res.send(respuesta);
+              }
+            } catch (error) {
+              console.log(error);
+              connection.release();
+              respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the token.' };
+              res.send(respuesta);
+            }
+          }
+        });
+      }
+    });
+  }
+});
+
+  app.post('/rest/responderCuestionarioAlumno', function (req, res) {
+  console.log("Request Api rest: /responderCuestionarioAlumno");
+  if (req.query.tok == undefined || req.query.tok == '') {
+    respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
+    res.send(respuesta);
+  } else {
+    con.getConnection(function (err, connection) {
+      if (err) {
+        connection.release();
+        console.log(err);
+        respuesta = { error: true, codigo: 400, mensaje: 'Error while connecting to the database. ' + err };
+        res.send(respuesta);
+      } else {
+        sql = "select * from musuario where tok_usu='" + cifrar(String(req.query.tok)) + "';";
+        connection.query(sql, async (err, result) => {
+          if (err) {
+            connection.release();
+            console.log(err)
+            respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the token.' };
+            res.send(respuesta);
+          } else {
+            try {
+              result[0].tok_usu;
+              if ((await getTipoUsuarioID(result[0].id_usu) == 1)) {
+                var idGrupos = await getGruposIdAlu(result[0].id_usu);
+                if (idGrupos == 'err') {
+                  respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
+                  res.send(respuesta);
+                } else {
+                  var cuestionarios = await getCuestionariosProfe(idGrupos);
+                  if (cuestionarios == 'err') {
+                    respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
+                    res.send(respuesta);
+                  } else {
+                    var cuestionarioAresponder = []
+                    for (var x = 0; x < cuestionarios.length; x++) {
+                      if (String(cuestionarios[x][0]) == req.body.cuestionario) {
+                        cuestionarioAresponder = cuestionarios[x];
+                      }
+                    }
+                    if (cuestionarioAresponder.length == 0) {
+                      respuesta = { error: true, codigo: 400, mensaje: 'Error, the user has no access to the requested test.' };
+                      res.send(respuesta);
+                    } else {
+                      if (await checkCuestAlumno(cuestionarioAresponder[0], result[0].id_usu) == '') {
+                        var preguntasCue = await getPreguntasIdCue(cuestionarioAresponder[0]);
+                        var resCorrectas = [];
+                        var resIncorrectas = [];
+                        for (var y = 0; y < preguntasCue.length; y++) {
+                          if (String(preguntasCue[y][0]) == String(req.body.Preguntas[y][0])) {
+                            if (String(preguntasCue[y][1]) == String(req.body.Preguntas[y][1])) {
+                              resCorrectas.push(await getIdPregunta(preguntasCue[y][0]));
+                            } else {
+                              resIncorrectas.push(await getIdPregunta(preguntasCue[y][0]));
+                            }
+                          } else {
+                            resIncorrectas.push(await getIdPregunta(preguntasCue[y][0]));
+                          }
+                        }
+                        var estatus = await saveRespuestasAlumno(cuestionarioAresponder[0], result[0].id_usu, resCorrectas, resIncorrectas);
+                        if (estatus == 'error') {
+                          respuesta = { error: true, codigo: 400, mensaje: 'Error while saving the results.' };
+                          res.send(respuesta);
+                        } else {
+                          respuesta = { error: false, codigo: 200, mensaje: 'token accepted and test grades and uploaded.' };
+                          res.send(respuesta);
+                        }
+                      } else {
+                        respuesta = { error: true, codigo: 400, mensaje: 'Error, el cuestionario ya se ha respondido anteriormente por lo que no se puede volver a contestar.' };
+                        res.send(respuesta);
+                      }
+                    }
+                  }
+                }
+              } else {
+                respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                res.send(respuesta);
+              }
+            } catch (error) {
+              console.log(error);
+              connection.release();
+              respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the token.' };
+              res.send(respuesta);
+            }
+          }
+        });
+      }
+    });
+  }
+});
+
 function createDb(config) {
   const connection = mysql.createConnection(config);
   return {
@@ -440,26 +576,41 @@ var run = async (password) => {
   }
 }
 
+var saveRespuestasAlumno = async (idCue, idALu, resCor, resInc) => {
+  try {
+    sql = "insert into dpuntajealumnocuestionario (id_usu,id_cue,id_pco,id_pin) values(" + idALu + "," + idCue + ",'" + String(resCor) + "','" + String(resInc) + "');";
+    console.log(sql);
+    const connection = createDb(configuration);
+    const status = await connection.query(sql);
+    connection.close();
+    return status;
+  } catch (eror) {
+    console.log(eror);
+    connection.close();
+    return 'error';
+  }
+}
+
 var getCueAprRpr = async (idCue) => {
-  sql = "select * from dpuntajealumnocuestionario where id_cue = "+String(idCue)+";";
+  sql = "select * from dpuntajealumnocuestionario where id_cue = " + String(idCue) + ";";
   try {
     const connection = createDb(configuration);
     const data = await connection.query(sql);
     aprobados = 0;
     reprobados = 0;
-    for(var x = 0;x<data.length;x++){
-      var splitCor =String(data[x].id_pco);
-      var splitIn =String(data[x].id_pin);
+    for (var x = 0; x < data.length; x++) {
+      var splitCor = String(data[x].id_pco);
+      var splitIn = String(data[x].id_pin);
       var total = splitCor.length + splitIn.length;
-      var cal = (splitCor.length/total)*100
-      if(cal > 60){
+      var cal = (splitCor.length / total) * 100
+      if (cal > 60) {
         aprobados++;
-      }else{
+      } else {
         reprobados++;
       }
     }
     connection.close();
-    return [aprobados,reprobados];
+    return [aprobados, reprobados];
   } catch (eror) {
     console.log(eror);
     connection.close();
@@ -487,7 +638,21 @@ var getPreguntaId = async (idPre) => {
     const connection = createDb(configuration);
     const data = await connection.query(sql);
     connection.close();
-    return [data[0].con_pre, data[0].res_cor, await getTemaId(data[0].id_tem), data[0].opc_a, data[0].opc_b, data[0].opc_a, data[0].opc_d];
+    return [data[0].con_pre, data[0].res_cor, await getTemaId(data[0].id_tem), data[0].opc_a, data[0].opc_b, data[0].opc_a, data[0].opc_d, data[0].id_dif];
+  } catch (eror) {
+    console.log(eror);
+    connection.close();
+    return 'err';
+  }
+}
+
+var getIdPregunta = async (nomPre) => {
+  try {
+    sql = "select * from mbancopreguntas where con_pre = '" + String(nomPre) + "';";
+    const connection = createDb(configuration);
+    const data = await connection.query(sql);
+    connection.close();
+    return data[0].id_bpr;
   } catch (eror) {
     console.log(eror);
     connection.close();
@@ -517,9 +682,41 @@ var getPreguntasIdCue = async (idCue) => {
   }
 }
 
+var checkCuestAlumno = async (idCue, idALu) => {
+  try {
+    sql = "select * from dpuntajealumnocuestionario where id_cue = " + String(idCue) + " and id_usu=" + String(idALu) + ";";
+    const connection = createDb(configuration);
+    const data = await connection.query(sql);
+    connection.close();
+    return data[0].id_pac;
+  } catch (eror) {
+    console.log(eror);
+    connection.close();
+    return 'err';
+  }
+}
+
 var getGruposIdProfe = async (idProfe) => {
   try {
     sql = "select * from eusuariosgrupo where id_usu=" + String(idProfe) + ";";
+    const connection = createDb(configuration);
+    const data = await connection.query(sql);
+    grupos = [];
+    for (var x = 0; x < data.length; x++) {
+      grupos.push(data[x].id_gru);
+    }
+    connection.close();
+    return grupos;
+  } catch (eror) {
+    console.log(eror);
+    connection.close();
+    return 'err';
+  }
+}
+
+var getGruposIdAlu = async (idALu) => {
+  try {
+    sql = "select * from eusuariosgrupo where id_usu=" + String(idALu) + ";";
     const connection = createDb(configuration);
     const data = await connection.query(sql);
     grupos = [];
@@ -716,7 +913,7 @@ let getNomGrupoId = async (idGru) => {
   try {
     sql = "select * from cgrupo where id_gru = " + String(idGru) + ";";
     const connection = createDb(configuration);
-    const data = await connection.query(  sql);
+    const data = await connection.query(sql);
     connection.close();
     return data[0].nom_gru;
   } catch (eror) {
