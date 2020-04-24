@@ -46,6 +46,7 @@ function decifrar(encryptedHex) {
 //'/usuarios/:id const id = req.params.id;  
 app.get('/rest/login', function (req, res) {
   console.log("Request Api rest: /login");
+  console.log(new Date());
   if (req.query.user == undefined || req.query.pass == undefined || req.query.user == '' || req.query.pass == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -60,6 +61,7 @@ app.get('/rest/login', function (req, res) {
         sql = "select * from musuario where cor_usu='" + String(req.query.user) + "' and pas_usu='" + cifrar(String(req.query.pass)) + "';";
         connection.query(sql, function (err, result) {
           if (err) {
+            connection.release();
             respuesta = { error: true, codigo: 400, mensaje: 'Error while retrieving data. ' + err };
             res.send(respuesta);
           } else {
@@ -71,6 +73,8 @@ app.get('/rest/login', function (req, res) {
                 mensaje: 'User Found.',
                 Correo: result[0].cor_usu,
                 Tipo: result[0].id_tus,
+                Nombre: result[0].nom_usu,
+                Curp: result[0].curp_usu,
                 Token: decifrar(String(result[0].tok_usu))
               };
               x = 1;
@@ -83,6 +87,7 @@ app.get('/rest/login', function (req, res) {
                 mensaje: 'User Not Found.',
               };
             }
+            connection.release();
             res.send(respuesta);
           }
         });
@@ -93,6 +98,7 @@ app.get('/rest/login', function (req, res) {
 
 app.get('/rest/consultaAGProfesor', function (req, res) {
   console.log("Request Api rest: /consultaAGProfesor");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -118,13 +124,16 @@ app.get('/rest/consultaAGProfesor', function (req, res) {
                 const dat = await getAlumnosGrupoProfe(result[0].id_usu);
                 if (dat == 'error') {
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching data.' };
+                  connection.release();
                   res.send(respuesta);
                 } else {
+                  connection.release();
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', alumnos: dat };
                   res.send(respuesta);
                 }
               } else {
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                connection.release();
                 res.send(respuesta);
               }
             } catch (error) {
@@ -142,6 +151,7 @@ app.get('/rest/consultaAGProfesor', function (req, res) {
 
 app.get('/rest/consultaAlumnosGrupos', function (req, res) {
   console.log("Request Api rest: /consultaAlumnosGrupos");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -166,23 +176,26 @@ app.get('/rest/consultaAlumnosGrupos', function (req, res) {
               var iduser = await getTipoUsuarioID(result[0].id_usu);
               if (iduser == 1 || iduser == 2 || iduser == 'err') {
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                connection.release();
                 res.send(respuesta);
               } else {
                 var alumnosGrupo = [];
                 var idgrupos = await getIdsGrupos();
                 if (idgrupos == 'err') {
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
+                  connection.release();
                   res.send(respuesta);
                 } else {
                   for (var i = 0; i < idgrupos.length; i++) {
                     alumnos = await getAlumnosIdGrupo(idgrupos[i]);
                     if (alumnos == 'err') {
-                      alumnosGrupo.push([idgrupos[i], []]);
+                      alumnosGrupo.push([[], '', idgrupos[i]]);
                     } else {
-                      alumnosGrupo.push([idgrupos[i], await getNomGrupoId(idgrupos[i]), alumnos]);
+                      alumnosGrupo.push([alumnos, idgrupos[i], await getNomGrupoId(idgrupos[i])]);
                     }
                   }
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', alumnosGrupo: alumnosGrupo };
+                  connection.release();
                   res.send(respuesta);
                 }
               }
@@ -201,6 +214,7 @@ app.get('/rest/consultaAlumnosGrupos', function (req, res) {
 
 app.get('/rest/consultaCuestionarioProfesor', function (req, res) {
   console.log("Request Api rest: /consultaCuestionarioProfesor");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -234,10 +248,12 @@ app.get('/rest/consultaCuestionarioProfesor', function (req, res) {
                     res.send(respuesta);
                   } else {
                     respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionarios: cuestionarios };
+                    connection.release();
                     res.send(respuesta);
                   }
                 }
               } else {
+                connection.release();
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
                 res.send(respuesta);
               }
@@ -256,6 +272,7 @@ app.get('/rest/consultaCuestionarioProfesor', function (req, res) {
 
 app.get('/rest/consultaCuestionarios', function (req, res) {
   console.log("Request Api rest: /consultaCuestionarios");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -279,15 +296,18 @@ app.get('/rest/consultaCuestionarios', function (req, res) {
               result[0].tok_usu;
               var iduser = await getTipoUsuarioID(result[0].id_usu);
               if (iduser == 1 || iduser == 2 || iduser == 'err') {
+                connection.release();
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
                 res.send(respuesta);
               } else {
                 var cuestionarios = await getCuestionarios();
                 if (cuestionarios == 'err') {
+                  connection.release();
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionarios: cuestionarios };
+                  connection.release();
                   res.send(respuesta);
                 }
               }
@@ -306,6 +326,7 @@ app.get('/rest/consultaCuestionarios', function (req, res) {
 
 app.get('/rest/consultaCuestPreguntas', function (req, res) {
   console.log("Request Api rest: /consultaCuestPreguntas");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '' || req.query.cues == undefined || req.query.cues == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -329,15 +350,18 @@ app.get('/rest/consultaCuestPreguntas', function (req, res) {
               result[0].tok_usu;
               var iduser = await getTipoUsuarioID(result[0].id_usu);
               if (iduser == 1 || iduser == 2 || iduser == 'err') {
+                connection.release();
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
                 res.send(respuesta);
               } else {
                 var cuestionarios = await getPreguntasIdCue(req.query.cues);
                 if (cuestionarios == 'err') {
+                  connection.release();
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionario: cuestionarios };
+                  connection.release();
                   res.send(respuesta);
                 }
               }
@@ -356,6 +380,7 @@ app.get('/rest/consultaCuestPreguntas', function (req, res) {
 
 app.get('/rest/consultaCuestAprRpr', function (req, res) {
   console.log("Request Api rest: /consultaCuestAprRpr");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '' || req.query.cues == undefined || req.query.cues == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -379,15 +404,18 @@ app.get('/rest/consultaCuestAprRpr', function (req, res) {
               result[0].tok_usu;
               var iduser = await getTipoUsuarioID(result[0].id_usu);
               if (iduser == 1 || iduser == 2 || iduser == 'err') {
+                connection.release();
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
                 res.send(respuesta);
               } else {
                 var cuestionarios = await getCueAprRpr(req.query.cues);
                 if (cuestionarios == 'err') {
+                  connection.release();
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
                   respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', aprrpr: cuestionarios };
+                  connection.release();
                   res.send(respuesta);
                 }
               }
@@ -406,6 +434,7 @@ app.get('/rest/consultaCuestAprRpr', function (req, res) {
 
 app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
   console.log("Request Api rest: /consultaCuestionarioAlumno");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -430,20 +459,24 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
               if ((await getTipoUsuarioID(result[0].id_usu) == 1)) {
                 var idGrupos = await getGruposIdAlu(result[0].id_usu);
                 if (idGrupos == 'err') {
+                  connection.release();
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
                   var cuestionarios = await getCuestionariosProfe(idGrupos);
                   if (cuestionarios == 'err') {
+                    connection.release();
                     respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                     res.send(respuesta);
                   } else {
                     respuesta = { error: false, codigo: 200, mensaje: 'token accepted.', cuestionarios: cuestionarios };
+                    connection.release();
                     res.send(respuesta);
                   }
                 }
               } else {
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                connection.release();
                 res.send(respuesta);
               }
             } catch (error) {
@@ -459,8 +492,9 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
   }
 });
 
-  app.post('/rest/responderCuestionarioAlumno', function (req, res) {
+app.post('/rest/responderCuestionarioAlumno', function (req, res) {
   console.log("Request Api rest: /responderCuestionarioAlumno");
+  console.log(new Date());
   if (req.query.tok == undefined || req.query.tok == '') {
     respuesta = { error: true, codigo: 400, mensaje: 'Missing or Invalid Parameters.' };
     res.send(respuesta);
@@ -485,11 +519,13 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
               if ((await getTipoUsuarioID(result[0].id_usu) == 1)) {
                 var idGrupos = await getGruposIdAlu(result[0].id_usu);
                 if (idGrupos == 'err') {
+                  connection.release();
                   respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                   res.send(respuesta);
                 } else {
                   var cuestionarios = await getCuestionariosProfe(idGrupos);
                   if (cuestionarios == 'err') {
+                    connection.release();
                     respuesta = { error: true, codigo: 400, mensaje: 'Error while searching the data.' };
                     res.send(respuesta);
                   } else {
@@ -501,6 +537,7 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
                     }
                     if (cuestionarioAresponder.length == 0) {
                       respuesta = { error: true, codigo: 400, mensaje: 'Error, the user has no access to the requested test.' };
+                      connection.release();
                       res.send(respuesta);
                     } else {
                       if (await checkCuestAlumno(cuestionarioAresponder[0], result[0].id_usu) == '') {
@@ -521,13 +558,16 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
                         var estatus = await saveRespuestasAlumno(cuestionarioAresponder[0], result[0].id_usu, resCorrectas, resIncorrectas);
                         if (estatus == 'error') {
                           respuesta = { error: true, codigo: 400, mensaje: 'Error while saving the results.' };
+                          connection.release();
                           res.send(respuesta);
                         } else {
                           respuesta = { error: false, codigo: 200, mensaje: 'token accepted and test grades and uploaded.' };
+                          connection.release();
                           res.send(respuesta);
                         }
                       } else {
                         respuesta = { error: true, codigo: 400, mensaje: 'Error, el cuestionario ya se ha respondido anteriormente por lo que no se puede volver a contestar.' };
+                        connection.release();
                         res.send(respuesta);
                       }
                     }
@@ -535,6 +575,7 @@ app.get('/rest/consultaCuestionarioAlumno', function (req, res) {
                 }
               } else {
                 respuesta = { error: true, codigo: 400, mensaje: 'Invalid User type.' };
+                connection.release();
                 res.send(respuesta);
               }
             } catch (error) {
